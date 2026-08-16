@@ -1,0 +1,3 @@
+# 把以下兩行加進你專案的 .gitignore
+CLAUDE.local.md
+.claude/settings.local.json

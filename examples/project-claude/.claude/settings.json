@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+
+  "permissions": {
+    "allow": [
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git branch *)",
+      "Bash(git show *)",
+      "Bash(ls *)",
+      "Bash(pwd)",
+      "Bash(pnpm test *)",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm build)",
+      "Read(**)",
+      "Write(./src/**)",
+      "Write(./tests/**)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./config/secrets/**)",
+      "Read(**/.ssh/**)",
+      "Write(./src/generated/**)",
+      "Write(./infra/terraform/prod/**)",
+      "Bash(git push --force*)",
+      "Bash(git reset --hard *)",
+      "Bash(pnpm publish *)",
+      "Bash(rm -rf /*)"
+    ],
+    "ask": [
+      "Bash(git commit *)",
+      "Bash(pnpm db:migrate *)"
+    ]
+  },
+
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/protect.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | grep -E '\\.(ts|tsx|js|jsx|json|css|md)$' | xargs -r npx prettier --write",
+            "timeout": 20,
+            "statusMessage": "格式化中…"
+          }
+        ]
+      }
+    ]
+  },
+
+  "claudeMdExcludes": [
+    "**/node_modules/**/CLAUDE.md"
+  ]
+}
