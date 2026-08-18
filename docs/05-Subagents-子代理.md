@@ -154,18 +154,116 @@ memory: project
 
 ## 5.8 worktree 隔離
 
+### 先搞清楚預設行為
+
+**子代理預設「不會」隔離——它們跟主 session 共用同一個工作目錄。**
+Claude Code 不會自動幫你開 worktree。
+
+（唯一的例外是桌面 App：那裡每個新 **session** 會自動配一個 worktree，
+但那是 session 層級，不是子代理層級。）
+
+所以「多代理情境下還需不需要 worktree」的答案是：**需要，但情境比多數人以為的窄。**
+
+### 判斷準則：有沒有「並行寫入」
+
+| 情境 | 需要 worktree？ |
+| --- | --- |
+| 唯讀扇出（`Explore` 搜尋、review、稽核、調查） | ❌ 不用 |
+| 多個代理**依序**執行 | ❌ 不用 |
+| 主線寫、子代理只讀 | ❌ 不用 |
+| 多個代理**同時改檔案** | ✅ 要 |
+| 代理跑 git 指令（checkout / stash / commit）而其他代理還在工作 | ✅ 要 |
+| 背景長跑代理，同時你自己還在主目錄改東西 | ✅ 要 |
+| 平行試 N 種方案再比較 | ✅ 要 |
+
+實務上多代理的使用有八成是第一類——找程式碼、平行 review、多視角驗證——這些完全不用 worktree。
+
+> ⚠️ 「檔案不重疊所以不用隔離」是**不安全**的推論。
+> 同一個 checkout 裡 git 的 index 與 HEAD 是共用狀態：一個代理 `git stash` 或切分支，
+> 其他代理腳下的檔案就變了。build 產物、lockfile、跑著的 dev server 也一樣會撞。
+
+### 怎麼開
+
+固定隔離，寫進 frontmatter：
+
 ```markdown
 ---
-name: refactor-worker
+name: refactorer
+description: 跨多檔案的機械式重構
 isolation: worktree
 ---
 ```
 
-子代理會在一個新建的 git worktree 裡工作，**不會動到你的工作目錄**。
-適合派好幾個平行改檔案的任務（否則會互相衝突）。
+臨時要用，直接講：
 
-成本：每個約 200–500ms 建立時間 + 磁碟空間。沒有實際改動的話會自動移除。
-需要把 gitignored 的檔案（如 `.env`）帶進 worktree 時，寫進 `.worktreeinclude`。
+```
+用 worktree 跑這些代理
+```
+
+Agent 工具與 Workflow 腳本的 agent 呼叫也都接受 `isolation: "worktree"`。
+
+### 三個會踩的坑
+
+**1. 預設從 remote 的預設分支開，不是你目前的工作**
+
+子代理 worktree 的 base 跟 `--worktree` 一樣是 `"fresh"`——
+從 `origin/HEAD`（通常是 `main`）開，**你未推送的 commit 與 feature 分支狀態不在裡面**。
+
+要基於現有工作，設定：
+
+```json
+{ "worktree": { "baseRef": "head" } }
+```
+
+| 值 | 從哪裡開分支 |
+| --- | --- |
+| `"fresh"`（預設） | remote 的預設分支，乾淨起點 |
+| `"head"` | 你目前的本地 `HEAD`，帶著未推送的工作 |
+
+（不能填分支名稱。要從特定分支開，得自己用 `git worktree add`。）
+
+**2. 是全新 checkout，沒有 `node_modules`、沒有 `.env`**
+
+gitignored 的檔案要用專案根目錄的 `.worktreeinclude` 帶進去（`.gitignore` 語法）：
+
+```text
+.env
+.env.local
+config/secrets.json
+```
+
+只有「符合 pattern 且本身是 gitignored」的檔案會被複製，被追蹤的檔案不會重複。
+相依套件則要另外裝（叫 Claude 在 worktree 裡跑一次安裝）。
+
+**3. 成本不是零**
+
+每個約 200–500ms 建立時間 + 磁碟空間。清理規則：
+
+- 子代理結束時**沒有任何改動** → 自動移除
+- **有改動** → 留在磁碟上，等定期掃描處理
+- 定期掃描依 `cleanupPeriodDays`，且會**跳過**還有未提交變更、未追蹤檔案或未推送 commit 的 worktree
+- 代理執行期間 Claude Code 會 `git worktree lock`，避免被誤刪
+- 手動清：`git worktree remove <path>`（有未提交內容要加 `--force`）
+
+### 隔離是強制執行的
+
+session 進入 worktree 後（不論是 `--worktree`、`EnterWorktree`、還是子代理隔離），
+Claude Code 會**硬性阻擋**四類逃逸：
+
+1. `Edit`/`Write`/`NotebookEdit` 寫到主 checkout 的路徑
+2. Bash/PowerShell 的工作目錄落在主 checkout
+3. 用 `git -C`、`--git-dir`、`GIT_DIR`、或先 `cd` 再跑 git 來繞路
+4. 無法靜態追蹤的指令形狀（大括號展開、未引號的 heredoc）——這條不能關
+
+這不是提醒，是 client 層的攔截。所以隔離是真的隔離。
+
+### 建議
+
+**預設不要開。** 先用「唯讀扇出 → 主線收斂寫入」這個模式，
+它解決大部分需求且沒有 worktree 的設定成本。
+
+等到你真的要讓多個代理**同時改檔案**時，才在那個特定 agent 上加 `isolation: worktree`，
+而不是全域打開。
 
 ---
 

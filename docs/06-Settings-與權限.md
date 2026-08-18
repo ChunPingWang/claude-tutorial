@@ -70,7 +70,8 @@
 | `autoMemoryDirectory` | 記憶存放位置，需絕對路徑或 `~/` 開頭 |
 | `autoCompactEnabled` / `autoCompactWindow` | 自動壓縮開關與門檻（100k–1M tokens） |
 | `alwaysThinkingEnabled` | 預設開啟延伸思考 |
-| `cleanupPeriodDays` | 逐字稿保留天數（預設 30，最小 1，設 0 會驗證失敗） |
+| `cleanupPeriodDays` | 逐字稿保留天數（預設 30，最小 1，設 0 會驗證失敗）。也決定 worktree 的清掃週期 |
+| `worktree.baseRef` | worktree 從哪開分支：`"fresh"`（預設，remote 預設分支）或 `"head"`（你目前的本地 HEAD）。見 [05 章 5.8](05-Subagents-子代理.md#58-worktree-隔離) |
 | `claudeMdExcludes` | 略過某些 CLAUDE.md（絕對路徑 glob，各層合併） |
 | `disableBundledSkills` | 關掉內建 skills |
 | `disableArtifact` / `disableRemoteControl` / `disableClaudeAiConnectors` | 關閉對應功能 |
