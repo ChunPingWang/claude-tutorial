@@ -174,6 +174,13 @@ your-project/.claude/
 
 沒有 `paths:` 的 rule，跟 `.claude/CLAUDE.md` 同等級，**啟動時就載入**。
 
+兩個載入時機的細節：
+
+- **工作目錄底下**的巢狀 `.claude/rules/`（例如 `apps/web/.claude/rules/`）不在啟動時載入，
+  而是等 Claude 讀到那個目錄的檔案時才帶進來——跟巢狀 CLAUDE.md 一樣是按需的。
+- 用 [`--setting-sources`](10-速查表.md) 排除 `project` 時，專案 rules 會整組被跳過。
+  （v2.1.211 之前，按需載入的那些——path-scoped 與巢狀 rules——即使排除了 `project` 仍會載入。）
+
 ### Path-scoped rules（真正能省 context 的做法）
 
 加上 `paths:` frontmatter，這條規則只有在 Claude 讀到符合的檔案時才進 context：

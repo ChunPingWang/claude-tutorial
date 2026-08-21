@@ -2,6 +2,10 @@
 
 子代理 = **另一個有自己 context window 的 Claude**，你派任務給它，它做完只回報結論。
 
+> 子代理是 Claude Code **四種平行方式中的一種**（另外三種是 agent view、agent teams、
+> dynamic workflows）。這章只講子代理；要比較四者、或需要讓工人彼此協調、
+> 或規模大到一輪協調不完，見 [11 章 · 多代理與平行執行](11-多代理與平行執行.md)。
+
 ---
 
 ## 5.1 什麼時候該用
@@ -355,6 +359,9 @@ memory: project
 
 **要兩者兼得**：寫一個 `context: fork` 的 Skill——
 你用 `/name` 呼叫，但它在子代理裡跑。
+
+還不夠的話——工人需要互相討論、或要一次跑幾十個代理並交叉驗證——
+往上一層看 [11 章](11-多代理與平行執行.md) 的 agent teams 與 dynamic workflows。
 
 ---
 

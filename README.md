@@ -16,6 +16,7 @@ Claude Code 是跑在終端機（也有桌面 App、網頁版、IDE 外掛）的
 | 只在改到某類檔案時才需要的規範 | `.claude/rules/*.md` | 專案 |
 | 「幫我做 X」這種多步驟流程 | **Skills** | `.claude/skills/<name>/SKILL.md` |
 | 隔離出去、不污染主對話的任務 | **Subagents** | `.claude/agents/*.md` |
+| 一次跑很多代理、或讓它們互相協調 | **Agent view / teams / workflows** | 見第 11 章 |
 | 權限、環境變數、模型預設 | `settings.json` | `.claude/` 或 `~/.claude/` |
 | 「每次存檔後自動跑 lint」這種硬性規則 | **Hooks** | `settings.json` 的 `hooks` |
 | 接外部系統（Notion、GitHub、DB） | **MCP** | `.mcp.json` / `~/.claude.json` |
@@ -40,6 +41,7 @@ Claude Code 是跑在終端機（也有桌面 App、網頁版、IDE 外掛）的
 | 08 | [MCP 與 Plugins](docs/08-MCP-與-Plugins.md) | 三種 MCP scope、安裝指令、外掛目錄結構與發佈 |
 | 09 | [實戰工作流](docs/09-實戰工作流.md) | 探索→計畫→實作→驗證、大型 repo、code review、CI |
 | 10 | [速查表](docs/10-速查表.md) | 指令、旗標、環境變數、疑難排解對照表 |
+| 11 | [多代理與平行執行](docs/11-多代理與平行執行.md) | agent view、agent teams、dynamic workflows、跨 session 傳訊、成本 |
 
 另有 [`examples/`](examples/) 一整套可直接複製的範例設定。
 

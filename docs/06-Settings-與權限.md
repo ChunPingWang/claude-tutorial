@@ -74,6 +74,11 @@
 | `worktree.baseRef` | worktree 從哪開分支：`"fresh"`（預設，remote 預設分支）或 `"head"`（你目前的本地 HEAD）。見 [05 章 5.8](05-Subagents-子代理.md#58-worktree-隔離) |
 | `claudeMdExcludes` | 略過某些 CLAUDE.md（絕對路徑 glob，各層合併） |
 | `disableBundledSkills` | 關掉內建 skills |
+| `disableAgentView` / `disableWorkflows` | 關閉 agent view / dynamic workflows |
+| `workflowSizeGuideline` | workflow 規模建議：`small`(<5) / `medium`(<15，預設) / `large`(<50) / `unrestricted` |
+| `teammateMode` | agent teams 顯示模式：`in-process`（預設）/ `auto` / `tmux` / `iterm2` |
+| `crossSessionInbound` | 跨 session 收訊：`accept` / `hold` / `refuse` |
+| `isolatePeerMachines` | 訊息送出本機前一律要你核准 |
 | `disableArtifact` / `disableRemoteControl` / `disableClaudeAiConnectors` | 關閉對應功能 |
 | `companyAnnouncements` | 啟動時顯示的公告（managed） |
 | `claudeMd` | 直接把企業版 CLAUDE.md 內容寫在 managed settings 裡（**只有 managed/policy 層有效**） |
